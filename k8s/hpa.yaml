@@ -1,12 +1,12 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: static-webapp-hpa
+  name: do-scalable-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: static-webapp
+    name: do-scalable
   minReplicas: 2
   maxReplicas: 10
   metrics:
