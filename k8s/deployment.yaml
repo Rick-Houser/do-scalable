@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: do-scalable
+  labels:
+    app: do-scalable
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: do-scalable
+  template:
+    metadata:
+      labels:
+        app: do-scalable
+    spec:
+      containers:
+      - name: do-scalable
+        image: registry.digitalocean.com/do-scalable/do-scalable-image:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
