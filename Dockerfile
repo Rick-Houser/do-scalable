@@ -1,11 +1,6 @@
-# Use nginx to serve static files
-FROM nginx:alpine
-
-# Copy our static HTML file to nginx html directory
-COPY index.html /usr/share/nginx/html/
-
-# Expose port 80
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+FROM python:3.11-slim
+WORKDIR /app
+RUN pip install flask requests
+COPY app.py .
+EXPOSE 5000
+CMD ["python", "app.py"]
