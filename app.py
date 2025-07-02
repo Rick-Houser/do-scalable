@@ -65,7 +65,6 @@ HTML_TEMPLATE = """
             <h2>Node Information</h2>
             <p><strong>Node Name:</strong> {{ node_name }}</p>
             <p><strong>Node IP:</strong> {{ node_ip }}</p>
-            <p><strong>Cluster:</strong> {{ cluster_name }}</p>
         </div>
 
         <div style="margin-top: 30px;">
