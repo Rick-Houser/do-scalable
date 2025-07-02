@@ -1,6 +1,7 @@
 # Kubernetes Scalability Demo
 
 A Flask application that demonstrates horizontal pod autoscaling (HPA) and load distribution across Kubernetes nodes. Built for DigitalOcean Kubernetes (DOKS) clusters.
+<br>
 
 ## Features
 
@@ -9,6 +10,7 @@ A Flask application that demonstrates horizontal pod autoscaling (HPA) and load 
 - **Load Balancing Demo**: Refresh to see requests hit different pods across nodes
 - **Horizontal Scaling**: Watch HPA create new pods under load
 - **REST API**: JSON endpoint for programmatic access to pod/node data
+<br>
 
 ## Prerequisites
 
@@ -18,6 +20,7 @@ A Flask application that demonstrates horizontal pod autoscaling (HPA) and load 
   - Kubernetes cluster provisioned
 - `doctl` CLI tool [installed and authenticated](https://docs.digitalocean.com/reference/doctl/how-to/install/)
 - `kubectl` configured for your DOKS cluster
+<br>
 
 ## Local Development
 
@@ -39,6 +42,7 @@ A Flask application that demonstrates horizontal pod autoscaling (HPA) and load 
    docker build -t do-scalable .
    docker run -p 5000:5000 do-scalable
    ```
+<br>
 
 ## Deployment
 
@@ -62,12 +66,14 @@ A Flask application that demonstrates horizontal pod autoscaling (HPA) and load 
    ```bash
    kubectl get services
    ```
+<br>
 
 ## Usage
 
 - **Main Demo**: Visit the LoadBalancer external IP
 - **API Endpoint**: `GET /api/info` for JSON data
 - **Load Testing**: Refresh repeatedly to see different pods/nodes handling requests
+<br>
 
 ## Test Autoscaling
 
@@ -105,6 +111,7 @@ Follow DigitalOcean's [autoscaling testing methodology](https://docs.digitalocea
    ```
    - After 5 minutes of lowered CPU use, HPA deletes unutilized pods  
    - Another 5 minutes later, Cluster Autoscaler scales down excess nodes
+<br>
 
 ### Alternative Quick Test
 
@@ -115,6 +122,7 @@ kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin
 # Inside the pod:
 while true; do wget -q -O- http://YOUR_EXTERNAL_IP; done
 ```
+<br>
 
 ### Real-time Monitoring
 
@@ -129,6 +137,7 @@ kubectl get pods -w
 # Monitor resource utilization  
 kubectl top pods
 ```
+<br>
 
 ## Configuration
 
