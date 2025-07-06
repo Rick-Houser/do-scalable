@@ -15,12 +15,39 @@ A Flask application that demonstrates horizontal pod autoscaling (HPA) and load 
 ## Prerequisites
 
 - Docker installed locally
-- DigitalOcean account with:
-  - Container Registry created and [integrated with Kubernetes](https://docs.digitalocean.com/products/container-registry/how-to/use-registry-docker-kubernetes/)
-  - Kubernetes cluster provisioned
+- DigitalOcean account with billing enabled
 - `doctl` CLI tool [installed and authenticated](https://docs.digitalocean.com/reference/doctl/how-to/install/)
-- `kubectl` configured for your DOKS cluster
+- `kubectl` [configured for your DOKS cluster](https://docs.digitalocean.com/products/kubernetes/how-to/connect-to-cluster/)
 <br>
+
+## Setup
+
+### Create DOKS Cluster
+
+Create a DigitalOcean Kubernetes cluster with autoscaling enabled:
+
+```bash
+doctl kubernetes cluster create scalable-demo-cluster \
+  --tag do-scalable \
+  --auto-upgrade=true \
+  --node-pool "name=worker-pool;count=2;auto-scale=true;min-nodes=1;max-nodes=3;tag=do-scalable"
+```
+
+Wait for cluster creation (3-5 minutes):
+```bash
+doctl kubernetes cluster list
+kubectl get nodes
+```
+
+### Container Registry Setup
+```bash
+# Create registry
+doctl registry create scalable-demo-registry
+
+# Integrate with cluster
+doctl registry kubernetes-manifest | kubectl apply -f -
+```
+_Alternative: Use Docker Hub or other registries by updating image URLs in k8s/deployment.yaml_
 
 ## Local Development
 
@@ -77,41 +104,48 @@ A Flask application that demonstrates horizontal pod autoscaling (HPA) and load 
 
 ## Test Autoscaling
 
-Follow DigitalOcean's [autoscaling testing methodology](https://docs.digitalocean.com/products/kubernetes/how-to/set-up-autoscaling/#test-autoscaling) to demonstrate horizontal pod autoscaling behavior.
-
 ### Load Testing with DigitalOcean's Load Generator
 
 1. **Deploy the load generator** using DigitalOcean's provided configuration:
-   ```bash
-   kubectl apply -f <path-to-load-generator-yaml-file>
-   ```
-
+    
+    ```bash
+    kubectl apply -f https://raw.githubusercontent.com/digitalocean/kubernetes-sample-apps/master/load-generator.yaml
+    
+    ```
+    
 2. **Monitor HPA and Cluster Autoscaler status**:
-   ```bash
-   # Check HPA status
-   kubectl describe hpa scalability-demo
-   
-   # Check Cluster Autoscaler status
-   kubectl get configmap cluster-autoscaler-status -n kube-system -oyaml
-   ```
-
+    
+    ```bash
+    # Check HPA status
+    kubectl describe hpa scalability-demo
+    
+    # Check Cluster Autoscaler status
+    kubectl get configmap cluster-autoscaler-status -n kube-system -o yaml
+    
+    ```
+    
 3. **Scale up load generation** to increase pressure:
-   ```bash
-   kubectl scale deployment/load-generator --replicas 2
-   ```
-
+    
+    ```bash
+    kubectl scale deployment/load-generator --replicas 2
+    
+    ```
+    
 4. **Observe scaling behavior**:
-   - After 5 minutes of sustained CPU spiking, HPA schedules more pods
-   - Another 5 minutes later, if cluster capacity is reached, Cluster Autoscaler adds nodes
-   - Watch pods distribute across nodes: `kubectl get pods -o wide`
-
+    - After 5 minutes of sustained CPU spiking, HPA schedules more pods
+    - Another 5 minutes later, if cluster capacity is reached, Cluster Autoscaler adds nodes
+    - Watch pods distribute across nodes: `kubectl get pods -o wide`
+    
 5. **Scale down to observe cleanup**:
-   ```bash
-   kubectl scale deployment/load-generator --replicas 1
-   ```
-   - After 5 minutes of lowered CPU use, HPA deletes unutilized pods  
-   - Another 5 minutes later, Cluster Autoscaler scales down excess nodes
-<br>
+    
+    ```bash
+    kubectl scale deployment/load-generator --replicas 1
+    
+    ```
+    
+    - After 5 minutes of lowered CPU use, HPA deletes unutilized pods
+    - Another 5 minutes later, Cluster Autoscaler scales down excess nodes
+    <br>
 
 ### Alternative Quick Test
 
@@ -142,6 +176,15 @@ kubectl top pods
 ## Configuration
 
 - **Min Replicas**: 3
-- **Max Replicas**: 10  
+- **Max Replicas**: 10
 - **CPU Threshold**: 70%
 - **Target Port**: 5000
+- **Resource Requests**: 100m CPU, 128Mi memory
+- **Resource Limits**: 500m CPU, 256Mi memory
+
+## Architecture
+
+- **Pod-level autoscaling**: HPA scales from 3 to 10 replicas based on CPU utilization
+- **Node-level autoscaling**: Cluster Autoscaler adds/removes nodes based on capacity
+- **Load balancing**: DigitalOcean LoadBalancer distributes traffic across pods
+- **Multi-node deployment**: Pods distributed across cluster nodes for high availability
